@@ -1,5 +1,6 @@
 # Methodology
 
+
 ---
 
 ## 1. Problem Formulation
@@ -11,17 +12,17 @@ This work addresses physics-informed trajectory reconstruction from sparse, nois
 The latent continuous-time state is denoted:
 
 $$
-\mathbf{y}(t) = \begin{bmatrix} x(t) \\\\ v(t) \end{bmatrix}, \quad t \in [0, T\_{\text{end}}]
+\mathbf{y}(t) = \begin{bmatrix} x(t) \\ v(t) \end{bmatrix}, \quad t \in [0, T_{\text{end}}]
 $$
 
 The observation set comprises scalar position measurements corrupted by additive Gaussian noise:
 
 $$
-\mathcal{D} = \lbrace (t\_i, x\_{\text{obs}}(t\_i)) \rbrace\_{i=1}^{N\_{\text{obs}}}
+\mathcal{D} = \lbrace (t_i, x_{\text{obs}}(t_i)) \rbrace_{i=1}^{N_{\text{obs}}}
 $$
 
 $$
-x\_{\text{obs}}(t\_i) = x(t\_i) + \eta\_i, \quad \eta\_i \sim \mathcal{N}(0, \sigma\_{\text{noise}}^2)
+x_{\text{obs}}(t_i) = x(t_i) + \eta_i, \quad \eta_i \sim \mathcal{N}(0, \sigma_{\text{noise}}^2)
 $$
 
 ### 1.2 Observation Protocol
@@ -67,7 +68,7 @@ Chaoticity defines a predictability scale via:
 
 The exponent is estimated from a model-only reference simulation using the stroboscopic map $P: \mathbf{y}(t) \to \mathbf{y}(t + T\_f)$.
 
-Let $\mathbf{y}\_n = \mathbf{y}(t\_0 + n T\_f)$ for $n = 0, \ldots, N\_{\text{strobe}} - 1$ with $N\_{\text{strobe}} = 2000$.
+Let $\mathbf{y}\_n = \mathbf{y}(t\_0 + n T\_f)$ for $n = 0, \ldots, N\_{\text{strobe}} - 1$ with $N\_{\text{strobe}} = 2000$. We set $t\_0$ to the start of the post-burn-in reference window (i.e., $t\_0 = 0$ in the saved reference trajectory). The stroboscopic series $\lbrace \mathbf{y}\_n \rbrace$ is extracted from the same model-only reference trajectory used for characteristic scaling (Section 6.5). Let $k\_{\max} = 8$ and define $\mathcal{I} := \lbrace 0, 1, \ldots, N\_{\text{strobe}} - 1 - k\_{\max} \rbrace$ so that $\mathbf{y}\_{n+k}$ is well-defined for all $n \in \mathcal{I}$ and $k \leq k\_{\max}$.
 
 **Algorithm specifications:**
 
@@ -76,10 +77,10 @@ Let $\mathbf{y}\_n = \mathbf{y}(t\_0 + n T\_f)$ for $n = 0, \ldots, N\_{\text{st
 - Linear fit region: $k \in \lbrace 1, \ldots, 8 \rbrace$
 - Linearity criterion: $R^2 \geq 0.98$
 
-For each index $n$, select nearest neighbor $n'$ minimizing distance subject to $|n - n'| \geq w$. Compute mean log-separation growth:
+For each index $n$, select nearest neighbor $n'$ (excluding self-match and respecting Theiler window) minimizing distance subject to $|n - n'| \geq w$. Compute mean log-separation growth:
 
 $$
-S(k) = \frac{1}{|\mathcal{I}|} \sum\_{n \in \mathcal{I}} \log \lVert \mathbf{y}\_{n+k} - \mathbf{y}\_{n'+k} \rVert\_2
+S(k) = \frac{1}{|\mathcal{I}|} \sum_{n \in \mathcal{I}} \log \lVert \mathbf{y}_{n+k} - \mathbf{y}_{n'+k} \rVert_2
 $$
 
 Fit $S(k) \approx S(0) + \lambda\_{\text{map}} \cdot k$ over $k = 1, \ldots, 8$.
@@ -87,7 +88,7 @@ Fit $S(k) \approx S(0) + \lambda\_{\text{map}} \cdot k$ over $k = 1, \ldots, 8$.
 ### 3.2 Continuous-Time Conversion
 
 $$
-\lambda\_{\max} \approx \frac{\lambda\_{\text{map}}}{T\_f}, \quad \tau\_\lambda \approx \frac{1}{\lambda\_{\max}}
+\lambda_{\max} \approx \frac{\lambda_{\text{map}}}{T_f}, \quad \tau_\lambda \approx \frac{1}{\lambda_{\max}}
 $$
 
 **Measured values:**
@@ -147,7 +148,7 @@ $$
 Denoting the vector field $\mathbf{F}(\mathbf{y}, t) = [v, -\delta v - \alpha x - \beta x^3 + \gamma \cos(\omega t)]^\top$ and energy gradient $\nabla H(\mathbf{y}) = [\alpha x + \beta x^3, v]^\top$:
 
 $$
-\mathcal{R}\_{\text{power}}(t) \equiv \nabla H(\mathbf{y}) \cdot \big( \dot{\mathbf{y}} - \mathbf{F}(\mathbf{y}, t) \big)
+\mathcal{R}_{\text{power}}(t) \equiv \nabla H(\mathbf{y}) \cdot \big( \dot{\mathbf{y}} - \mathbf{F}(\mathbf{y}, t) \big)
 $$
 
 Minimizing $|\mathcal{R}\_{\text{power}}|^2$ induces a rank-1, state-dependent quadratic penalty on the vector-field error, concentrating optimization pressure where $\lVert \nabla H \rVert$ is large.
@@ -166,8 +167,10 @@ Minimizing $|\mathcal{R}\_{\text{power}}|^2$ induces a rank-1, state-dependent q
 ### 6.2 Time Normalization
 
 $$
-\tilde{t} = \frac{2t}{T\_{\text{end}}} - 1 \in [-1, 1]
+\tilde{t} = \frac{2t}{T_{\text{end}}} - 1 \in [-1, 1]
 $$
+
+Derivatives in $r\_1, r\_2$ are taken with respect to physical time $t$. With $\tilde{t} = 2t/T\_{\text{end}} - 1$, we compute $\frac{d}{dt} = \frac{2}{T\_{\text{end}}} \frac{d}{d\tilde{t}}$ via the chain rule (and analogously for higher components).
 
 ### 6.3 Fourier Features
 
@@ -184,11 +187,11 @@ $$
 ### 6.4 Residual Definitions
 
 $$
-r\_1(t) = \dot{x}\_\theta(t) - v\_\theta(t)
+r_1(t) = \dot{x}_\theta(t) - v_\theta(t)
 $$
 
 $$
-r\_2(t) = \dot{v}\_\theta(t) + \delta v\_\theta(t) + \alpha x\_\theta(t) + \beta x\_\theta^3(t) - \gamma \cos(\omega t)
+r_2(t) = \dot{v}_\theta(t) + \delta v_\theta(t) + \alpha x_\theta(t) + \beta x_\theta^3(t) - \gamma \cos(\omega t)
 $$
 
 ### 6.5 Characteristic Scaling
@@ -196,19 +199,21 @@ $$
 Computed from model-only attractor simulation (fixed across all experiments). Reference run length $T\_{\text{ref}} = 500 \, T\_f$ after burn-in, sampled at $dt = 0.01$.
 
 $$
-s\_{r1} = \text{RMS}(|v\_{\text{ref}}(t)|), \quad s\_{r2} = \text{RMS}(|\dot{v}\_{\text{ref}}(t)|)
+s_{r1} = \text{RMS}(|v_{\text{ref}}(t)|), \quad s_{r2} = \text{RMS}(|\dot{v}_{\text{ref}}(t)|)
 $$
 
 $$
 s\_{dH} = \text{RMS}\big( |\gamma v\_{\text{ref}}(t) \cos(\omega t) - \delta v\_{\text{ref}}^2(t)| \big)
 $$
 
+Here $\dot{v}\_{\text{ref}}(t)$ is evaluated analytically from the Duffing vector field (no numerical differentiation).
+
 ---
 
 ## 7. Loss Function
 
 $$
-\mathcal{L} = \mathcal{L}\_{\text{data}} + \lambda\_p \mathcal{L}\_{\text{phys}} + \lambda\_e \mathcal{L}\_{\text{power}} + \lambda\_{ic} \mathcal{L}\_{ic}
+\mathcal{L} = \mathcal{L}_{\text{data}} + \lambda_p \mathcal{L}_{\text{phys}} + \lambda_e \mathcal{L}_{\text{power}} + \lambda_{ic} \mathcal{L}_{ic}
 $$
 
 **Weights:** $\lambda\_p = 1$, $\lambda\_e = 0.2$, $\lambda\_{ic} = 0.1$
@@ -222,20 +227,22 @@ $$
 ### 7.2 Physics Residuals
 
 $$
-\mathcal{L}\_{\text{phys}} = \frac{1}{N\_{\text{col}}} \sum\_{c=1}^{N\_{\text{col}}} \left[ \left( \frac{r\_1(t\_c)}{s\_{r1}} \right)^2 + \left( \frac{r\_2(t\_c)}{s\_{r2}} \right)^2 \right]
+\mathcal{L}_{\text{phys}} = \frac{1}{N_{\text{col}}} \sum_{c=1}^{N_{\text{col}}} \left[ \left( \frac{r_1(t_c)}{s_{r1}} \right)^2 + \left( \frac{r_2(t_c)}{s_{r2}} \right)^2 \right]
 $$
 
 ### 7.3 Power-Balance Preconditioning
 
 $$
-\mathcal{L}\_{\text{power}} = \frac{1}{N\_{\text{col}}} \sum\_{c=1}^{N\_{\text{col}}} \left( \frac{\mathcal{R}\_{\text{power}}(t\_c)}{s\_{dH}} \right)^2
+\mathcal{L}_{\text{power}} = \frac{1}{N_{\text{col}}} \sum_{c=1}^{N_{\text{col}}} \left( \frac{\mathcal{R}_{\text{power}}(t_c)}{s_{dH}} \right)^2
 $$
 
 ### 7.4 Soft Initial Anchor
 
 $$
-\mathcal{L}\_{ic} = \left( \frac{x\_\theta(t\_{\min}) - x\_{\text{obs}}(t\_{\min})}{\sigma\_{\text{noise}}} \right)^2
+\mathcal{L}_{ic} = \left( \frac{x_\theta(t_{\min}) - x_{\text{obs}}(t_{\min})}{\sigma_{\text{noise}}} \right)^2
 $$
+
+Here $t\_{\min} := \min\_i t\_i$ is the earliest observation time (equal to $0$ by the gap constraint in Section 10.2).
 
 ---
 
@@ -246,14 +253,19 @@ $$
 - $N\_{\text{col}} = 8192$ points per iteration
 - **Mixture:** 70% gap interiors, 30% observed intervals
 
+Here "gap interiors" denote the union of open missing intervals $(t\_L, t\_R)$ (excluding gap endpoints), and collocation times are sampled uniformly in continuous time within each interval; "observed intervals" denote the complement in $[0, T\_{\text{end}}]$.
+
 ### 8.2 Two-Stage Optimization
 
 1. **Adam:** $\text{lr} = 10^{-3}$, $\beta\_1 = 0.9$, $\beta\_2 = 0.999$, 50,000 iterations
+
+The data term $\mathcal{L}\_{\text{data}}$ is evaluated on all $N\_{\text{obs}}$ observations each iteration (no minibatching over observations).
+
 2. **L-BFGS-B:** max 10,000 iterations, history size 50
 
 ### 8.3 Determinism Constraint
 
-L-BFGS-B uses a **frozen** collocation set of size $N\_{\text{col}} = 65536$ to ensure deterministic objective.
+L-BFGS-B uses a **frozen** collocation set of size $N\_{\text{col}} = 65536$ to ensure deterministic objective (Adam uses $N\_{\text{col}} = 8192$ per iteration; L-BFGS-B uses a frozen set of size 65536). The frozen collocation set is drawn once from the same 70% gap / 30% observed mixture and held fixed throughout L-BFGS-B.
 
 ---
 
@@ -262,17 +274,19 @@ L-BFGS-B uses a **frozen** collocation set of size $N\_{\text{col}} = 65536$ to 
 ### 9.1 Locally Periodic Gaussian Process
 
 $$
-k(t, t') = \sigma\_k^2 \exp\left( -\frac{2 \sin^2(\pi(t-t')/T\_f)}{\ell\_{\text{per}}^2} \right) \exp\left( -\frac{(t-t')^2}{2 \ell\_{\text{rbf}}^2} \right)
+k(t, t') = \sigma_k^2 \exp\left( -\frac{2 \sin^2(\pi(t-t')/T_f)}{\ell_{\text{per}}^2} \right) \exp\left( -\frac{(t-t')^2}{2 \ell_{\text{rbf}}^2} \right)
 $$
 
 - Period fixed to $T\_f$
 - $M = 512$ inducing points
 - Adam optimizer: $\text{lr} = 0.05$, 3,000 steps
 
+Kernel hyperparameters $(\sigma\_k, \ell\_{\text{per}}, \ell\_{\text{rbf}})$ are fit by maximizing the (sparse variational) marginal likelihood with observation noise variance fixed to $\sigma\_{\text{noise}}^2$. We report $v\_{\text{GP}}(t) = \frac{d}{dt}\mu(t)$, the analytic derivative of the posterior mean.
+
 ### 9.2 Strong-Constraint IVP Shooting
 
 $$
-\min\_{x\_0, v\_0} \sum\_{i=1}^{N\_{\text{obs}}} \left( \frac{x(t\_i; x\_0, v\_0) - x\_{\text{obs}}(t\_i)}{\sigma\_{\text{noise}}} \right)^2
+\min_{x_0, v_0} \sum_{i=1}^{N_{\text{obs}}} \left( \frac{x(t_i; x_0, v_0) - x_{\text{obs}}(t_i)}{\sigma_{\text{noise}}} \right)^2
 $$
 
 - **Integrator:** DOP853 with $\text{rtol} = 10^{-10}$, $\text{atol} = 10^{-12}$
@@ -281,14 +295,14 @@ $$
 
 ### 9.3 Weak-Constraint 4D-Var
 
-Time is discretized on a uniform grid $t\_k = k \Delta t$ with step $\Delta t = 0.01$. The mapping $k(i)$ denotes the grid index corresponding to observation time $t\_i$. Decision variables are $\lbrace \mathbf{y}\_k \rbrace\_{k=0}^{N\_t}$ with $\mathbf{y}\_k = [x\_k, v\_k]^\top$.
+Time is discretized on a uniform grid $t\_k = k \Delta t$ with step $\Delta t = 0.01$. The mapping $k(i)$ denotes the grid index corresponding to observation time $t\_i$. Since $t\_i$ lie on the $\Delta t = 0.01$ grid (with $\Delta t\_{\text{obs}} = 0.05$ a multiple of $\Delta t$), we take $k(i) = t\_i / \Delta t$ (integer-valued). Decision variables are $\lbrace \mathbf{y}\_k \rbrace\_{k=0}^{N\_t}$ with $\mathbf{y}\_k = [x\_k, v\_k]^\top$. Initialization uses cubic-spline interpolation of $x$ through observed points and $v$ from finite differences on observed segments (set to 0 inside gaps before optimization).
 
 $$
-\mathcal{J}(\lbrace \mathbf{y}\_k \rbrace) = \sum\_{i \in \mathcal{I}\_{\text{obs}}} \left( \frac{x\_{k(i)} - x\_{\text{obs}}(t\_i)}{\sigma\_{\text{noise}}} \right)^2 + \lambda\_m \sum\_{k=0}^{N\_t-1} \lVert \mathbf{W}\_{\text{step}}^{-1} \big( \mathbf{y}\_{k+1} - \Phi\_{\Delta t}(\mathbf{y}\_k) \big) \rVert\_2^2
+\mathcal{J}(\lbrace \mathbf{y}_k \rbrace) = \sum_{i \in \mathcal{I}_{\text{obs}}} \left( \frac{x_{k(i)} - x_{\text{obs}}(t_i)}{\sigma_{\text{noise}}} \right)^2 + \lambda_m \sum_{k=0}^{N_t-1} \lVert \mathbf{W}_{\text{step}}^{-1} \big( \mathbf{y}_{k+1} - \Phi_{\Delta t}(\mathbf{y}_k) \big) \rVert_2^2
 $$
 
 $$
-\mathbf{W}\_{\text{step}} = \text{diag}(\Delta t \cdot s\_{r1}, \Delta t \cdot s\_{r2}), \quad \lambda\_m = 1
+\mathbf{W}_{\text{step}} = \text{diag}(\Delta t \cdot s_{r1}, \Delta t \cdot s_{r2}), \quad \lambda_m = 1
 $$
 
 - **Flow map:** RK4 one-step integrator $\Phi\_{\Delta t}$
@@ -307,14 +321,16 @@ $$
 - **Resample step:** $dt = 0.01$
 - **Observation step:** $\Delta t\_{\text{obs}} = 0.05$
 - **Noise levels:** $\sigma\_{\text{noise}} \in \lbrace 0.02, 0.05, 0.10 \rbrace$
-- **Random seeds:** $S = 10$
+- **Random seeds:** $S = 10$. The 10 random seeds control noise realization, gap placement, network initialization, and collocation RNG.
 
 ### 10.2 Gap Configuration
 
 - $G = 10$ gaps
 - $q \in \lbrace T\_f, 4T\_f \rbrace$
-- Minimum separation: $q$
-- No overlap
+- **Minimum separation:** $q$
+- **No overlap**
+- Gap endpoints are aligned to the observation grid $\Delta t\_{\text{obs}} = 0.05$
+- Gaps are constrained not to include $t = 0$, so the earliest observation time satisfies $t\_{\min} = 0$ in all experiments
 
 ---
 
@@ -322,14 +338,14 @@ $$
 
 ### 11.1 Gap-RMS
 
-RMSE of $x\_\theta(t)$ against ground truth on gap interiors with 5% boundary trimming.
+RMSE of $x\_\theta(t)$ against ground truth on gap interiors with 5% boundary trimming. All gap-interior metrics are evaluated on the uniform $dt = 0.01$ grid (with 5% trimming for Gap-RMS).
 
 ### 11.2 Stroboscopic Lyapunov Exponent
 
 Rosenstein estimate with Theiler $w = 1$ and fit range $k = 1, \ldots, 8$:
 
 $$
-\hat{\lambda}\_{\max} = \hat{\lambda}\_{\text{map}} / T\_f
+\hat{\lambda}_{\max} = \hat{\lambda}_{\text{map}} / T_f
 $$
 
 ### 11.3 Extended-Attractor MMD
@@ -340,6 +356,10 @@ Maximum mean discrepancy (Gaussian kernel, median heuristic bandwidth) between r
 - **Predicted samples:** $N\_{\text{pred}} = 5000$ gap-interior points per run (subsampled to avoid $O(n^2)$ cost)
 - **Phase bins:** 32 uniform bins of $\phi = \omega t \pmod{2\pi}$
 - **Bootstrap:** $B = 200$ replicates, block length $T\_f$
+
+For each predicted sample, we draw a reference sample uniformly from the same phase bin (with replacement) to form the phase-matched reference set.
+
+Before computing MMD, all coordinates of $[x, v, \cos(\omega t), \sin(\omega t)]$ are standardized to zero mean and unit variance using the reference-set statistics.
 
 ### 11.4 Flow-Consistency Defect
 
@@ -354,7 +374,7 @@ $$
 
 ### 11.5 Physics Compliance
 
-RMS of normalized residuals $r\_1/s\_{r1}$ and $r\_2/s\_{r2}$ on gap interiors.
+RMS of normalized residuals $r\_1/s\_{r1}$ and $r\_2/s\_{r2}$ on gap interiors. All gap-interior metrics are evaluated on the uniform $dt = 0.01$ grid.
 
 ---
 
