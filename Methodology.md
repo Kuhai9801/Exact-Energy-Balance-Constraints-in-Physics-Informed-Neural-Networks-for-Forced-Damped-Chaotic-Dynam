@@ -68,7 +68,7 @@ Chaoticity defines a predictability scale via:
 
 The exponent is estimated from a model-only reference simulation using the stroboscopic map $P: \mathbf{y}(t) \to \mathbf{y}(t + T\_f)$.
 
-Let $\mathbf{y}\_n = \mathbf{y}(t\_0 + n T\_f)$ for $n = 0, \ldots, N\_{\text{strobe}} - 1$ with $N\_{\text{strobe}} = 2000$. We set $t\_0$ to the start of the post-burn-in reference window (i.e., $t\_0 = 0$ in the saved reference trajectory). The stroboscopic series $\lbrace \mathbf{y}\_n \rbrace$ is extracted from the same model-only reference trajectory used for characteristic scaling (Section 6.5). Let $k\_{\max} = 8$ and define $\mathcal{I} := \lbrace 0, 1, \ldots, N\_{\text{strobe}} - 1 - k\_{\max} \rbrace$ so that $\mathbf{y}\_{n+k}$ is well-defined for all $n \in \mathcal{I}$ and $k \leq k\_{\max}$.
+Let $\mathbf{y}\_n = \mathbf{y}(t\_0 + n T\_f)$ for $n = 0, \ldots, N\_{\text{strobe}} - 1$ with $N\_{\text{strobe}} = 2000$. We set $t\_0$ to the start of the post-burn-in reference window (i.e., $t\_0 = 0$ in the saved reference trajectory). The stroboscopic series $\lbrace \mathbf{y}\_n \rbrace$ is extracted from the same long model-only reference trajectory used for characteristic scaling (Section 6.5). Let $k\_{\max} = 8$ and define $\mathcal{I} := \lbrace 0, 1, \ldots, N\_{\text{strobe}} - 1 - k\_{\max} \rbrace$ so that $\mathbf{y}\_{n+k}$ is well-defined for all $n \in \mathcal{I}$ and $k \leq k\_{\max}$.
 
 **Algorithm specifications:**
 
